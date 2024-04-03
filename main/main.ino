@@ -16,7 +16,8 @@ void setup()
 {
   // Initialize Serial communication at baud rate 115200
   Serial.begin(115200);
-
+  delay(1000);
+  Serial.printf(">>> Firmware Version: %s \n", FirmwareVer);    // Display current firmware version
   // Initialize EEPROM module
   EEPROM.begin(512);
   Serial.println("\n\n>>>>>>>>>> Read EEPROM \n");
