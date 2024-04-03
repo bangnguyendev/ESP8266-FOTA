@@ -1,28 +1,14 @@
-/*                                                                                                                                                               
-      _____          ____  _____   ______         _____           _____   ______         _____     ____   ____  _____      _____      ______  _____   ______   
- ___|\     \    ____|\   \|\    \ |\     \    ___|\    \         |\    \ |\     \    ___|\    \   |    | |    ||\    \    /    /| ___|\     \|\    \ |\     \  
-|    |\     \  /    /\    \\\    \| \     \  /    /\    \         \\    \| \     \  /    /\    \  |    | |    || \    \  /    / ||     \     \\\    \| \     \ 
-|    | |     ||    |  |    |\|    \  \     ||    |  |____|         \|    \  \     ||    |  |____| |    | |    ||  \____\/    /  /|     ,_____/|\|    \  \     |
-|    | /_ _ / |    |__|    | |     \  |    ||    |    ____          |     \  |    ||    |    ____ |    | |    | \ |    /    /  / |     \--'\_|/ |     \  |    |
-|    |\    \  |    .--.    | |      \ |    ||    |   |    |         |      \ |    ||    |   |    ||    | |    |  \|___/    /  /  |     /___/|   |      \ |    |
-|    | |    | |    |  |    | |    |\ \|    ||    |   |_,  |         |    |\ \|    ||    |   |_,  ||    | |    |      /    /  /   |     \____|\  |    |\ \|    |
-|____|/____/| |____|  |____| |____||\_____/||\ ___\___/  /|         |____||\_____/||\ ___\___/  /||\___\_|____|     /____/  /    |____ '     /| |____||\_____/|
-|    /     || |    |  |    | |    |/ \|   ||| |   /____ / |         |    |/ \|   ||| |   /____ / || |    |    |    |`    | /     |    /_____/ | |    |/ \|   ||
-|____|_____|/ |____|  |____| |____|   |___|/ \|___|    | /          |____|   |___|/ \|___|    | /  \|____|____|    |_____|/      |____|     | / |____|   |___|/
-  \(    )/      \(      )/     \(       )/     \( |____|/             \(       )/     \( |____|/      \(   )/         )/           \( |_____|/    \(       )/  
-   '    '        '      '       '       '       '   )/                 '       '       '   )/          '   '          '             '    )/        '       '   
-                                                    '                                      '                                             '                     
-*/
-
 /* Cập nhật OTA */
 
-const String FirmwareVer={"v1.0.0"}; 
+const String FirmwareVer={"v1.0.9"}; 
 
-#define URL_fw_Version "/bangnguyendev/XXXXXXX/master/include/Info_prod.json"
-#define URL_fw_Bin "https://raw.githubusercontent.com/bangnguyendev/XXXXXXX/master/build/main.ino.bin"
+#define URL_fw_Version "/bangnguyendev/ESP8266-FOTA/master/include/Info_prod.json"
+#define URL_fw_Bin "https://raw.githubusercontent.com/bangnguyendev/ESP8266-FOTA/master/build/main.ino.bin"
 
 const char* host = "raw.githubusercontent.com";
 const int httpsPort = 443;
+
+WiFiClientSecure client;
 
 //UPDATER
 String last_error;
@@ -45,19 +31,9 @@ void update_error(int err) {
 //UPDATER
 
 /* PIN kết nối với chuông kêu */
-#define PIN_signal_Bell D4
+#define PIN_Led D2
 /* PIN kết nối với nút nhấn MODE */
 #define Button_Mode D1
-
-/* Define By User NDB */
-#define ESP_NB_ZERO 0
-#define ESP_NB_ONE 1
-#define ESP_NB_OFF 0
-#define ESP_NB_ON 1
-
-/* Cài đặt dạng kết nối nút nhấn PULL_UP OR PULL_DOWN */
-#define PULLUP_PULLDOWN 1 // PULL DOWN
-
 
 #define SIZE_NAME_SSID 0
 #define SIZE_CHAR_PASS 8
@@ -74,15 +50,15 @@ void update_error(int err) {
 // Definition for the EEPROM storage area of password, ending at address 100
 #define END_EEPROM_PASS 100
 
+// time NTP
+char buffer_sent_serial[80];
+char buffer_year[80];
 
-
-/* Khai báo cấu hình cho wifi */
-const char *ssid = "BV Public";
-const char *passphrase = "banviencorp";
 WiFiClient client_wifi;
 
 extern void setup();
 extern void loop();
+extern void SmartConfigESP();
+extern bool VerifyConnection_WIFI();
+extern void Connect_Localtime_NTP();
 extern void update_FOTA();
-extern void smartConfig_ndb();
-extern bool bool_Test_Wifi();
