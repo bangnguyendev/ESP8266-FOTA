@@ -1,0 +1,34 @@
+name: Compare Versions
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install jq for JSON processing
+        run: sudo apt-get install jq
+
+      - name: Extract versions from JSON and header files
+        id: extract_versions
+        run: |
+          json_version=$(jq -r '.main.version' include/Info_prod.json)
+          header_version=$(awk -F '"' '/FirmwareVer/{print $2}' include/Macro_define.h)
+          echo "::set-output name=json_version::$json_version"
+          echo "::set-output name=header_version::$header_version"
+
+      - name: Compare versions
+        run: |
+          if [ "${{ steps.extract_versions.outputs.json_version }}" == "${{ steps.extract_versions.outputs.header_version }}" ]; then
+            echo "Versions match: ${{ steps.extract_versions.outputs.json_version }}"
+          else
+            echo "Versions do not match"
+            exit 1
+          fi
