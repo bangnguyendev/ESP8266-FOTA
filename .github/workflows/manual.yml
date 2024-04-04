@@ -1,4 +1,4 @@
-name: Compare Versions
+name: Compare Versions Firmware
 
 on:
   push:
