@@ -22,12 +22,10 @@ void setup()
   Serial.printf(">>> Device: %d MHz \n", ESP.getCpuFreqMHz());             // Display device CPU frequency
   Serial.printf(">>> Boot Mode: %d \n", ESP.getBootMode());                // Display boot mode
   Serial.printf(">>> Free Sketch Space: %d \n", ESP.getFreeSketchSpace()); // Display free sketch space
+  
   // Initialize EEPROM module
   EEPROM.begin(512);
-  Serial.println("\n\n>>>>>>>>>> Read EEPROM \n");
-
-  // Read WiFi credentials from EEPROM
-  Serial.println(">>>>>>>>>> READ SSID PASS EEROM  \n");
+  Serial.println("\n\n>>>>>>>>>> 1. Read EEPROM \n");
 
   // Read SSID from EEPROM
   Serial.println("Reading EEPROM ssid ......");
@@ -49,6 +47,8 @@ void setup()
   Serial.print(">>>>> PASS: ");
   Serial.println(epass);
 
+  // Check if WiFi connection is successful
+  Serial.println("\n\n>>>>>>>>>> 2. VerifyConnection_WIFI \n");
   // Check if SSID length is valid
   if (esid.length() <= SIZE_NAME_SSID)
   {
@@ -257,6 +257,7 @@ void SmartConfigESP()
 void Connect_Localtime_NTP()
 {
   configTime(7 * 3600, 0, "vn.pool.ntp.org", "time.nist.gov");
+  Serial.println("\n\n>>>>>>>>>> 3. Connect NTP \n");
   Serial.println("Update Time <<< - >>> vn.pool.ntp.org \n");
   while (!time(nullptr))
   {
@@ -274,8 +275,6 @@ void Connect_Localtime_NTP()
   // Loop indefinitely
   while (millis() - startTime < timeoutSeconds * 1000)
   {
-    // Delay for 1 second
-    delay(1000);
     time_t rawtime;
     struct tm *timeinfo;
 
@@ -289,9 +288,11 @@ void Connect_Localtime_NTP()
     while (time_year > 2023)
     {
       strftime(buffer_sent_serial, 80, "%H:%M:%S %d-%B-%Y", timeinfo);
-      Serial.printf("Time now: %s \n", buffer_sent_serial);
+      Serial.printf("Time now: %s \n\n", buffer_sent_serial);
       return;
     }
+    // Delay for 1 second
+    delay(1000);
   }
   // Print message to serial monitor indicating automatic restart
   Serial.println("Auto restart.");
@@ -305,7 +306,7 @@ void Connect_Localtime_NTP()
 
 void update_FOTA()
 {
-  Serial.println(">>>>>>>>>>> Update FOTA \n");  // Indicate the start of FOTA update process
+  Serial.println("\n\n>>>>>>>>>> 4. FOTA Workflows \n"); // Indicate the start of FOTA update process
   Serial.println("Check firmware for updates."); // Prompt to check for firmware updates
 
   Serial.println("Checking for updates"); // Display message indicating checking for updates
@@ -359,8 +360,10 @@ void update_FOTA()
 
   if (version_prod.equals(FirmwareVer))
   {
+    Serial.printf(">>> Board__Firmware Version: %s \n", FirmwareVer);       // Display Board current firmware version
+    Serial.printf(">>> Server_Firmware Version: %s \n", version_prod);       // Display Server current firmware version
     Serial.println(">>> Device already on latest firmware version"); // Display message indicating already on latest firmware version
-    delay(1500);
+    delay(200);
   }
   else
   {
@@ -408,5 +411,5 @@ void update_FOTA()
     }
   }
 
-  Serial.println("\n<<<<<<<<<< Done Check FOTA \n"); // Indicate completion of FOTA update process
+  Serial.println("\n<<<<<<<<<< Done Check FOTA >>>>>>>>>>\n"); // Indicate completion of FOTA update process
 }
