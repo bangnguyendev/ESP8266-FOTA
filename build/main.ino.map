@@ -23151,7 +23151,7 @@ END GROUP
  .irom.text     0x0000000040267e88       0x18 C:\Users\bang.nguyen-duy\AppData\Local\Arduino15\packages\esp8266\hardware\esp8266\3.1.2/tools/sdk/lib/NONOSDK22x_190703\libnet80211.a(ieee80211_crypto_wep.o)
                 0x0000000040267e88                wep
  *(.irom0.pstr.*)
- .irom0.pstr.main.ino.353.22
+ .irom0.pstr.main.ino.352.22
                 0x0000000040267ea0       0x24 C:\Users\bang.nguyen-duy\Documents\Git\ESP8266-FOTA\build\sketch\main.ino.cpp.o
  .irom0.pstr.BearSSLHelpers.cpp.365.11
                 0x0000000040267ec4       0x11 C:\Users\bang.nguyen-duy\Documents\Git\ESP8266-FOTA\build\libraries\ESP8266WiFi\ESP8266WiFi.a(BearSSLHelpers.cpp.o)
