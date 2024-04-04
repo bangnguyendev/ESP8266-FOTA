@@ -22,14 +22,14 @@ jobs:
           json_version=$(jq -r '.main.version' include/Info_prod.json)
           header_version=$(awk -F '"' '/FirmwareVer/{print $2}' include/Macro_define.h)
           bin_version=$(strings build/main.ino.bin | grep -E 'v[0-9]+(\.[0-9]+){2}' | head -n 1)
-          echo "::set-output name=json_version::$json_version"
-          echo "::set-output name=header_version::$header_version"
-          echo "::set-output name=bin_version::$bin_version"
+          echo "json_version=$json_version" >> $JSON_VERSION
+          echo "header_version=$header_version" >> $HEADER_VERSION
+          echo "bin_version=$bin_version" >> $BIN_VERSION
 
       - name: Compare versions
         run: |
-          if [ "${{ steps.extract_versions.outputs.json_version }}" == "${{ steps.extract_versions.outputs.header_version }}" ] && [ "${{ steps.extract_versions.outputs.json_version }}" == "${{ steps.extract_versions.outputs.bin_version }}" ]; then
-            echo "All versions match: ${{ steps.extract_versions.outputs.json_version }}"
+          if [ "${{ steps.extract_versions.outputs.$JSON_VERSION }}" == "${{ steps.extract_versions.outputs.$HEADER_VERSION }}" ] && [ "${{ steps.extract_versions.outputs.$JSON_VERSION }}" == "${{ steps.extract_versions.outputs.$BIN_VERSION }}" ]; then
+            echo "All versions match: ${{ steps.extract_versions.outputs.$JSON_VERSION }}"
           else
             echo "Versions do not match"
             exit 1
