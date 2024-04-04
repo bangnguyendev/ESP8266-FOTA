@@ -28,8 +28,8 @@ jobs:
 
       - name: Compare versions
         run: |
-          if [ "${{ steps.extract_versions.outputs.$JSON_VERSION }}" == "${{ steps.extract_versions.outputs.$HEADER_VERSION }}" ] && [ "${{ steps.extract_versions.outputs.$JSON_VERSION }}" == "${{ steps.extract_versions.outputs.$BIN_VERSION }}" ]; then
-            echo "All versions match: ${{ steps.extract_versions.outputs.$JSON_VERSION }}"
+          if [ "${{ JSON_VERSION }}" == "${{ HEADER_VERSION }}" ] && [ "${{ JSON_VERSION }}" == "${{ BIN_VERSION }}" ]; then
+            echo "All versions match: ${{ JSON_VERSION }}"
           else
             echo "Versions do not match"
             exit 1
