@@ -6,18 +6,22 @@
 
 #include <time.h>
 #include <EEPROM.h>
-#include <ArduinoJson.h> /* ARDUINOJSON_VERSION "6.x.x" */
+#include <ArduinoJson.h> /* ARDUINO JSON*/
 
 /* USER DEFINE  */
-#include "../../../ESP8266-FOTA/include/Macro_define.h"         /* DEFINE MACRO */
-#include "../../../ESP8266-FOTA/include/DigiCertGlobalRootCA.h" /* DEFINE DigiCertGlobalRootCA */
+#include "../../include/Macro_define.h"         /* DEFINE MACRO */
+#include "../../include/DigiCertGlobalRootCA.h" /* DEFINE DigiCertGlobalRootCA */
 
 void setup()
 {
   // Initialize Serial communication at baud rate 115200
   Serial.begin(115200);
-  delay(1000);
-  Serial.printf(">>> Firmware Version: %s \n", FirmwareVer);    // Display current firmware version
+  delay(500);
+  Serial.printf("\n\n>>> ESP ID: %X \r\n", CHIPID);                        // Display ESP chip ID
+  Serial.printf(">>> Firmware Version: %s \n", FirmwareVer);               // Display current firmware version
+  Serial.printf(">>> Device: %d MHz \n", ESP.getCpuFreqMHz());             // Display device CPU frequency
+  Serial.printf(">>> Boot Mode: %d \n", ESP.getBootMode());                // Display boot mode
+  Serial.printf(">>> Free Sketch Space: %d \n", ESP.getFreeSketchSpace()); // Display free sketch space
   // Initialize EEPROM module
   EEPROM.begin(512);
   Serial.println("\n\n>>>>>>>>>> Read EEPROM \n");
@@ -45,18 +49,28 @@ void setup()
   Serial.print(">>>>> PASS: ");
   Serial.println(epass);
 
-  // Check if SSID length is greater than 0
-  if (esid.length() > SIZE_NAME_SSID)
+  // Check if SSID length is valid
+  if (esid.length() <= SIZE_NAME_SSID)
   {
-    // Connect to WiFi network using SSID and password
+    // Invalid SSID, start SmartConfig process
+    Serial.println("Invalid or empty SSID !!!");
+    Serial.println("Require using EspTouch App !!!");
+    SmartConfigESP();
+  }
+  else
+  {
+    // Set WiFi mode to station mode
     WiFi.mode(WIFI_STA);
+    // Connect to WiFi network using SSID and password
     WiFi.begin(esid.c_str(), epass.c_str());
 
     // Check if WiFi connection is successful
     if (VerifyConnection_WIFI())
     {
-      Serial.println("");
-      Serial.println("Wifi Connection Successful!!!");
+      // Print WiFi diagnostics
+      WiFi.printDiag(Serial);
+      Serial.print("IP address: ");
+      Serial.println(WiFi.localIP());
     }
     else
     {
@@ -66,40 +80,20 @@ void setup()
       SmartConfigESP();
     }
   }
-  else
-  {
-    // Invalid SSID, start SmartConfig process
-    Serial.println("Invalid or empty SSID !!!");
-    Serial.println("Require using EspTouch App !!!");
-    SmartConfigESP();
-  }
-
-  // Set WiFi mode to station mode
-  WiFi.mode(WIFI_STA);
-
-  // Print WiFi diagnostics
-  Serial.println("");
-  WiFi.printDiag(Serial);
-  Serial.println("");
-  Serial.println("WiFi connected");
-  Serial.println("IP address: ");
-  Serial.println(WiFi.localIP());
-  Serial.println("\n");
 
   // Synchronize time useing SNTP. This is necessary to verify that
   // the TLS certificates offered by the server are currently valid.
   /* In cases when NTP is not used, app must set a time manually to check cert validity */
-  /* 1. Cập nhật thời gian từ sever vn.pool.ntp.org */
+  /* 1. Update time from the server vn.pool.ntp.org */
   Connect_Localtime_NTP();
-  /* 2. Check firmware coi có cập nhật không?  */
+  /* 2. Check firmware for updates */
   update_FOTA();
+
 }
 
 void loop()
 {
   // put your main code here, to run repeatedly:
-  Connect_Localtime_NTP();
-  update_FOTA();
 
   delay(3000);
   return;
@@ -118,9 +112,9 @@ bool VerifyConnection_WIFI()
       // Blink the LED to indicate successful connection
       for (int i = 0; i < 5; i++)
       {
-        digitalWrite(PIN_Led, LOW);  // Turn off the LED
+        digitalWrite(LED_BUILTIN, LOW);  // Turn off the LED
         delay(500);                  // Wait for 0.5 seconds
-        digitalWrite(PIN_Led, HIGH); // Turn on the LED
+        digitalWrite(LED_BUILTIN, HIGH); // Turn on the LED
         delay(500);                  // Wait for 0.5 seconds
       }
       return true; // Return true to indicate successful connection
@@ -198,7 +192,7 @@ void SmartConfigESP()
       Serial.println(qpass);
 
       // (Optional) Activate a signal (bell or return) upon successful connection (commented out)
-      // digitalWrite(PIN_Led, ESP_NB_ON);
+      // digitalWrite(LED_BUILTIN, ESP_NB_ON);
 
       // Check if SSID and password have valid lengths
       if (qsid.length() > SIZE_NAME_SSID && qpass.length() >= SIZE_CHAR_PASS)
@@ -238,7 +232,7 @@ void SmartConfigESP()
         EEPROM.commit();
 
         // (Optional) Deactivate the signal upon successful saving (commented out)
-        // digitalWrite(PIN_Led, ESP_NB_OFF);
+        // digitalWrite(LED_BUILTIN, ESP_NB_OFF);
 
         // Print message to serial monitor indicating successful saving of ID and password
         Serial.println("EEPROM.commit() =>>> Saved ID & Pass Wifi");
@@ -310,10 +304,6 @@ void Connect_Localtime_NTP()
   ESP.restart();
 }
 
-void Setup_Local_RealTime()
-{
-}
-
 void update_FOTA()
 {
   Serial.println(">>>>>>>>>>> Update FOTA \n");  // Indicate the start of FOTA update process
@@ -322,12 +312,8 @@ void update_FOTA()
   Serial.println("Checking for updates"); // Display message indicating checking for updates
 
   /* Display loading... */
-
-  Serial.println("...");
-  Serial.printf(">>> Device: %d MHz \n", ESP.getCpuFreqMHz());             // Display device CPU frequency
-  Serial.printf(">>> Firmware Version: %s \n", FirmwareVer);               // Display current firmware version
   Serial.printf(">>> ESP ID: %X \r\n", CHIPID);                            // Display ESP chip ID
-  Serial.printf(">>> Boot Mode: %d \n", ESP.getBootMode());                // Display boot mode
+  Serial.printf(">>> Firmware Version: %s \n", FirmwareVer);               // Display current firmware version
   Serial.printf(">>> Free Sketch Space: %d \n", ESP.getFreeSketchSpace()); // Display free sketch space
 
   // client.setFingerprint(fingerprint);
@@ -352,7 +338,7 @@ void update_FOTA()
     String line = client.readStringUntil('\n');
     if (line == "\r")
     {
-      Serial.println(">>> Headers received"); // Indicate that headers have been received
+      Serial.println(">>> Headers received <Info_prod.json>"); // Indicate that headers have been received
       break;
     }
   }
@@ -375,10 +361,6 @@ void update_FOTA()
   if (version_prod.equals(FirmwareVer))
   {
     Serial.println(">>> Device already on latest firmware version"); // Display message indicating already on latest firmware version
-
-    Serial.println("The current version is the latest."); // Display message about current version
-
-    Serial.println("> > > > > > > > > > "); // Indicate end of update check
     delay(1500);
   }
   else
@@ -411,7 +393,6 @@ void update_FOTA()
       Serial.println(">>> Or your device is not permitted to update on the system...");                                               // Display device update permission message
       Serial.println(">>> Please check for updates at another time...");                                                              // Prompt to check for updates later
       Serial.printf(">>> Current version is %s \n", FirmwareVer);                                                                     // Display current firmware version
-
       Serial.println("> Skip updated...ERR"); // Display skipping update message
       delay(2000);
       break;
@@ -419,12 +400,6 @@ void update_FOTA()
     case HTTP_UPDATE_NO_UPDATES:
       Serial.println("HTTP_UPDATE_NO_UPDATES");                 // Display message indicating no updates available
       Serial.println(">>> The current version is the latest."); // Display message indicating already on latest version
-
-      Serial.println("The current version "); // Display message about current version
-
-      Serial.println("      is the latest."); // Display message indicating latest version
-
-      Serial.println("> > > > > > > > > > "); // Indicate end of update check
       delay(1500);
       break;
 

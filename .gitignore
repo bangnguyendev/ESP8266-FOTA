@@ -1,4 +1,3 @@
+.vscode/
 build/*
-!build/main.ino.map
 !build/main.ino.bin
-!build/main.ino.elf

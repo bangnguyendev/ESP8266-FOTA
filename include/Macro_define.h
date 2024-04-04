@@ -1,6 +1,6 @@
 /* Cập nhật OTA */
 
-const String FirmwareVer={"v1.0.1"}; 
+const String FirmwareVer={"v1.0.2"}; 
 
 #define URL_fw_Version "/bangnguyendev/ESP8266-FOTA/master/include/Info_prod.json"
 #define URL_fw_Bin "https://raw.githubusercontent.com/bangnguyendev/ESP8266-FOTA/master/build/main.ino.bin"
@@ -30,8 +30,8 @@ void update_error(int err) {
 }
 //UPDATER
 
-/* PIN kết nối với chuông kêu */
-#define PIN_Led D2
+/* PIN kết nối với chuông/led LED_BUILTIN D4 */ 
+
 /* PIN kết nối với nút nhấn MODE */
 #define Button_Mode D1
 
