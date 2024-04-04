@@ -21,8 +21,8 @@ jobs:
         run: |
           json_version=$(jq -r '.main.version' include/Info_prod.json)
           header_version=$(awk -F '"' '/FirmwareVer/{print $2}' include/Macro_define.h)
-          echo "::set-output name=json_version::$json_version"
-          echo "::set-output name=header_version::$header_version"
+          echo "${json_version}" >> $GITHUB_STATE
+          echo "${header_version}" >> $GITHUB_STATE
 
       - name: Compare versions
         run: |
@@ -32,3 +32,7 @@ jobs:
             echo "Versions do not match"
             exit 1
           fi
+
+      - name: Set output
+        if: failure()
+        run: echo "Versions do not match" >> $GITHUB_OUTPUT
