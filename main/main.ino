@@ -94,7 +94,10 @@ void setup()
 void loop()
 {
   // put your main code here, to run repeatedly:
-  delay(3000);
+  digitalWrite(LED_BUILTIN, LOW);  // Turn off the LED
+  delay(500);                  // Wait for 0.5 seconds
+  digitalWrite(LED_BUILTIN, HIGH); // Turn on the LED
+  delay(500);                  // Wait for 0.5 seconds
   return;
 }
 
@@ -316,14 +319,20 @@ void update_FOTA()
   Serial.printf(">>> Firmware Version: %s \n", FirmwareVer);               // Display current firmware version
   Serial.printf(">>> Free Sketch Space: %d \n", ESP.getFreeSketchSpace()); // Display free sketch space
 
+  // Secure for HTTPS connection
+  // 1. Using certificate
+  client.setTrustAnchors(&cert);
+  // 2. Using fingerprint
   // client.setFingerprint(fingerprint);
-  // client.setTrustAnchors(&cert);
-  // client.setClientRSACert(&serverCertList,&serverPrivKey);
-  client.setInsecure();
+
+  // Not secure
+  // client.setInsecure();
   if (!client.connect(host, httpsPort))
   {
     Serial.println(">>> raw.githubusercontent.com - Connection failed"); // Display connection failure message
     Serial.printf(">>> Current version is %s \n", FirmwareVer);          // Display current firmware version
+    // Print SSL error code
+    // Serial.printf("SSL error code: %s\n", client.getLastSSLError());
     return;
   }
 
