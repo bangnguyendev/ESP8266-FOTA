@@ -1,3 +1,46 @@
+## Installing with Boards Manager (More Information)
+
+**Compatibility:** This guide covers installing third-party boards using Boards Manager, introduced in Arduino IDE versions 1.6.4 and later. 
+
+**Preparation:**
+
+1. **Download and install Arduino IDE:** Get the latest version compatible with your system (Windows, Mac OS, Linux 32-bit or 64-bit) from the official Arduino website: [https://support.arduino.cc/hc/en-us/articles/360019833020-Download-and-install-Arduino-IDE](https://support.arduino.cc/hc/en-us/articles/360019833020-Download-and-install-Arduino-IDE)
+
+**Adding ESP8266 Board Package:**
+
+1. **Open Arduino IDE Preferences:** Navigate to **File > Preferences** (or **Arduino > Preferences** on Mac).
+2. **Add Boards Manager URL:** In the **Additional Boards Manager URLs** field, paste the following link:
+
+   ```
+   https://arduino.esp8266.com/stable/package_esp8266com_index.json
+   ```
+
+   You can add multiple URLs separated by commas if needed for other board packages.
+3. **Open Boards Manager:** Go to **Tools > Board > Boards Manager**.
+4. **Install ESP8266 Platform:** Search for "esp8266" and click the **Install** button.
+5. **Select ESP8266 Board (After Installation):** Once installed, choose your specific ESP8266 board from the **Tools > Board** menu.
+
+**Latest Version:**
+
+* Check the latest release version of the ESP8266 Arduino core: Latest release: [https://github.com/esp8266/Arduino/releases/latest/](https://github.com/esp8266/Arduino/releases/latest/)
+
+**Documentation:**
+
+* Refer to the ESP8266 Arduino core documentation for detailed instructions and examples: [invalid URL removed]
+
+**Additional Libraries:**
+
+This section provides links to popular libraries you might find useful for ESP8266 projects:
+
+* **LCD I2C:** [https://github.com/lucasmaziero/LiquidCrystal_I2C](https://github.com/lucasmaziero/LiquidCrystal_I2C)
+* **EEPROM ESP8266:** [https://github.com/esp8266/Arduino/blob/master/libraries/EEPROM/EEPROM.h](https://github.com/esp8266/Arduino/blob/master/libraries/EEPROM/EEPROM.h)
+* **ArduinoJson:** [https://github.com/bblanchon/ArduinoJson](https://github.com/bblanchon/ArduinoJson)
+* **SmartConfig ESP:** [https://www.eeweb.com/smartconfig-how-to-turn-an-esp8266-into-a-smart-home-device/](https://www.eeweb.com/smartconfig-how-to-turn-an-esp8266-into-a-smart-home-device/)
+
+**DigiCert Root Certificates:**
+
+* While not directly related to ESP8266 development, this link provides DigiCert root certificates, which may be necessary for secure communication with certain servers: [https://www.digicert.com/kb/digicert-root-certificates.htm](https://www.digicert.com/kb/digicert-root-certificates.htm)
+
 ## ESP8266 Firmware Over-the-Air (OTA) Update via HTTPS
 
 This project facilitates firmware updates for ESP8266 microcontroller units (MCUs) through HTTPS connections, comparing the firmware version with the `FirmwareVer` variable defined in the `Macro_define.h` file to initiate over-the-air (OTA) updates.
