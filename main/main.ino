@@ -13,6 +13,8 @@
 
 void setup()
 {
+  // Initialize LED_BUILTIN
+  pinMode(LED_BUILTIN, OUTPUT);
   // Initialize Serial communication at baud rate 115200
   Serial.begin(115200);
   delay(500);
@@ -94,9 +96,9 @@ void loop()
 {
   // put your main code here, to run repeatedly:
   digitalWrite(LED_BUILTIN, LOW);  // Turn off the LED
-  delay(500);                  // Wait for 0.5 seconds
+  delay(2000);                  // Wait for 0.5 seconds
   digitalWrite(LED_BUILTIN, HIGH); // Turn on the LED
-  delay(500);                  // Wait for 0.5 seconds
+  delay(2000);                  // Wait for 0.5 seconds
   return;
 }
 
@@ -114,9 +116,9 @@ bool VerifyConnection_WIFI()
       for (int i = 0; i < 5; i++)
       {
         digitalWrite(LED_BUILTIN, LOW);  // Turn off the LED
-        delay(500);                  // Wait for 0.5 seconds
+        delay(300);                  // Wait for 0.5 seconds
         digitalWrite(LED_BUILTIN, HIGH); // Turn on the LED
-        delay(500);                  // Wait for 0.5 seconds
+        delay(150);                  // Wait for 0.5 seconds
       }
       return true; // Return true to indicate successful connection
     case WL_CONNECT_FAILED:
