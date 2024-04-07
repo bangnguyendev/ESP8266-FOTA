@@ -1,12 +1,11 @@
 /* LIBRARY ARDUINO DEFINE  */
 #include <ESP8266WiFi.h>
-#include <ESP8266HTTPClient.h> /* Get data Weather - http */
-#include <ESP8266httpUpdate.h> /* Updated OTA */
-#include <WiFiClientSecure.h>
-
-#include <time.h>
-#include <EEPROM.h>
+#include <ESP8266httpUpdate.h> /* Download firmware - OTA */
+#include <ESP8266HTTPClient.h> /* ESP8266HTTPClient for HTTP */
+#include <WiFiClientSecure.h> /* WiFiClientSecure for HTTPS*/
 #include <ArduinoJson.h> /* ARDUINO JSON*/
+#include <EEPROM.h>
+#include <time.h>
 
 /* USER DEFINE  */
 #include "src/include/Macro_define.h"         /* DEFINE MACRO */
@@ -321,30 +320,30 @@ void update_FOTA()
 
   // Secure for HTTPS connection
   // 1. Using certificate
-  client.setTrustAnchors(&cert);
+  // client_HTTPS.setTrustAnchors(&cert);
   // 2. Using fingerprint
-  // client.setFingerprint(fingerprint);
+  // client_HTTPS.setFingerprint(fingerprint);
 
   // Not secure
-  // client.setInsecure();
-  if (!client.connect(host, httpsPort))
+  client_HTTPS.setInsecure();
+  if (!client_HTTPS.connect(host, httpsPort))
   {
     Serial.println(">>> raw.githubusercontent.com - Connection failed"); // Display connection failure message
     Serial.printf(">>> Current version is %s \n", FirmwareVer);          // Display current firmware version
     // Print SSL error code
-    // Serial.printf("SSL error code: %s\n", client.getLastSSLError());
+    // Serial.printf("SSL error code: %s\n", client_HTTPS.getLastSSLError());
     return;
   }
 
-  client.print(String("GET ") + URL_fw_Version + " HTTP/1.1\r\n" +
+  client_HTTPS.print(String("GET ") + URL_fw_Version + " HTTP/1.1\r\n" +
                "Host: " + host + "\r\n" +
                "User-Agent: BuildFailureDetectorESP8266\r\n" +
                "Connection: close\r\n\r\n");
 
   // Check content from the Version file
-  while (client.connected())
+  while (client_HTTPS.connected())
   {
-    String line = client.readStringUntil('\n');
+    String line = client_HTTPS.readStringUntil('\n');
     if (line == "\r")
     {
       Serial.println(">>> Headers received <Info_prod.json>"); // Indicate that headers have been received
@@ -352,7 +351,7 @@ void update_FOTA()
     }
   }
 
-  String payload = client.readString(); // Get the request response payload
+  String payload = client_HTTPS.readString(); // Get the request response payload
   Serial.println(payload);              // Display payload received
   DynamicJsonDocument jsonBuffer(1024);
 
@@ -394,7 +393,7 @@ void update_FOTA()
     ESPhttpUpdate.onProgress(update_progress);
     ESPhttpUpdate.onError(update_error);
 
-    t_httpUpdate_return ret = ESPhttpUpdate.update(client, URL_fw_Bin);
+    t_httpUpdate_return ret = ESPhttpUpdate.update(client_HTTPS, URL_fw_Bin);
 
     switch (ret)
     {

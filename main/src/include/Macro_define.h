@@ -2,13 +2,14 @@
 
 const String FirmwareVer={"v1.0.4"}; 
 
-#define URL_fw_Version "/bangnguyendev/ESP8266-FOTA/master/include/Info_prod.json"
+#define URL_fw_Version "/bangnguyendev/ESP8266-FOTA/master/main/src/include/Info_prod.json"
 #define URL_fw_Bin "https://raw.githubusercontent.com/bangnguyendev/ESP8266-FOTA/master/build/main.ino.bin"
 
 const char* host = "raw.githubusercontent.com";
 const int httpsPort = 443;
 
-WiFiClientSecure client;
+WiFiClient client_HTTP; // WiFiClient for HTTP
+WiFiClientSecure client_HTTPS; // WiFiClientSecure for HTTPS
 
 //UPDATER
 String last_error;
@@ -53,8 +54,6 @@ void update_error(int err) {
 // time NTP
 char buffer_sent_serial[80];
 char buffer_year[80];
-
-WiFiClient client_wifi;
 
 extern void setup();
 extern void loop();

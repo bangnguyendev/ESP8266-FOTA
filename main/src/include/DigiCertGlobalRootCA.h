@@ -38,4 +38,4 @@ X509List cert(trustRoot);
 // output:
 // Warning: Reading certificate from stdin since no -in or -new option is given
 // sha1 Fingerprint=97:D8:C5:70:0F:12:24:6C:88:BC:FA:06:7E:8C:A7:4D:A8:62:67:28
-// const char fingerprint[] PROGMEM = "97 D8 C5 70 0F 12 24 6C 88 BC FA 06 7E 8C A7 4D A8 62 67 28";
+const char fingerprint[] PROGMEM = "97 D8 C5 70 0F 12 24 6C 88 BC FA 06 7E 8C A7 4D A8 62 67 28";
