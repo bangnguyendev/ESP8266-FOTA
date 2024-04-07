@@ -1,3 +1,46 @@
+
+## Table of Contents
+1. [Introduction 'src subfolder'](#src-subfolder)
+3. [Installing with Boards Manager (More Information)](#installing-with-boards-manager-more-information)
+4. [ESP8266 Firmware Over-the-Air (OTA) Update via HTTPS](#esp8266-firmware-over-the-air-ota-update-via-https)
+5. [ESP8266 Firmware Verification CI/CD Action](#esp8266-firmware-verification-ci/cd-action)
+
+
+## Setting up Sketch Building with Visual Studio Code
+### Introduction
+This guide demonstrates how to set up building Sketch with Visual Studio Code.
+
+For detailed information, please refer to [Arduino CLI Sketch Specification](https://arduino.github.io/arduino-cli/0.35/sketch-specification/#src-subfolder) with focus on the "src subfolder" topic.
+
+#### src subfolder
+This would allow you to put the shared header files in a subfolder of your sketch folder:
+
+```
+MySketch
+|_ MySketch.ino
+|_ src
+   |_ includes
+      |_ myfile.h
+```
+
+Then you can do this in your sketch:
+
+```cpp
+#include "src/include/myfile.h"
+```
+
+The contents of the src subfolder are compiled recursively. Unlike the code files in the sketch root folder, these files are not shown as tabs in the IDEs.
+
+This is useful for files you don't want to expose to the sketch user via the IDE's interface. It can be used to bundle libraries with the sketch in order to make it a self-contained project.
+
+Arduino language files under the src folder are not supported.
+
+In Arduino IDE 1.6.5-r5 and older, no recursive compilation was done.
+
+In Arduino IDE 1.6.6 - 1.6.9, recursive compilation was done of all subfolders of the sketch folder.
+
+In Arduino IDE 1.6.10 and newer, recursive compilation is limited to the src subfolder of the sketch folder.
+
 ## Installing with Boards Manager (More Information)
 
 **Compatibility:** This guide covers installing third-party boards using Boards Manager, introduced in Arduino IDE versions 1.6.4 and later. 
@@ -32,7 +75,6 @@
 
 This section provides links to popular libraries you might find useful for ESP8266 projects:
 
-* **LCD I2C:** [https://github.com/lucasmaziero/LiquidCrystal_I2C](https://github.com/lucasmaziero/LiquidCrystal_I2C)
 * **EEPROM ESP8266:** [https://github.com/esp8266/Arduino/blob/master/libraries/EEPROM/EEPROM.h](https://github.com/esp8266/Arduino/blob/master/libraries/EEPROM/EEPROM.h)
 * **ArduinoJson:** [https://github.com/bblanchon/ArduinoJson](https://github.com/bblanchon/ArduinoJson)
 * **SmartConfig ESP:** [https://www.eeweb.com/smartconfig-how-to-turn-an-esp8266-into-a-smart-home-device/](https://www.eeweb.com/smartconfig-how-to-turn-an-esp8266-into-a-smart-home-device/)
@@ -52,7 +94,6 @@ This project facilitates firmware updates for ESP8266 microcontroller units (MCU
 └── build
     └── main.ino.bin           // Binary firmware file
 ```
-
 
 ### MCU Boot Process
 Upon startup, the ESP8266 microcontroller unit (MCU) follows a sequence of steps to ensure proper initialization and connectivity.
@@ -113,12 +154,10 @@ The primary objective of this CI/CD action is to validate that the firmware vers
 ### Usage
 To incorporate this CI/CD action into your development workflow, simply enable it within your GitHub repository. Upon each push to the `master` branch, the action will automatically execute, verifying the firmware versions and providing feedback on their consistency.
 
-
-
-### Contributors
+## Contributors
 - bangnguyendev
 - duybang140494@gmail.com
 - https://bangnguyendev.github.io/
 
-### License
+## License
 None
