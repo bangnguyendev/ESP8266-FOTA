@@ -1,6 +1,6 @@
 /* Cập nhật OTA */
 
-const String FirmwareVer={"v1.0.4"}; 
+const String FirmwareVer={"v1.0.5"}; 
 
 #define URL_fw_Version "/bangnguyendev/ESP8266-FOTA/master/main/src/include/Info_prod.json"
 #define URL_fw_Bin "https://raw.githubusercontent.com/bangnguyendev/ESP8266-FOTA/master/build/main.ino.bin"

@@ -2,8 +2,8 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266httpUpdate.h> /* Download firmware - OTA */
 #include <ESP8266HTTPClient.h> /* ESP8266HTTPClient for HTTP */
-#include <WiFiClientSecure.h> /* WiFiClientSecure for HTTPS*/
-#include <ArduinoJson.h> /* ARDUINO JSON*/
+#include <WiFiClientSecure.h>  /* WiFiClientSecure for HTTPS*/
+#include <ArduinoJson.h>       /* ARDUINO JSON*/
 #include <EEPROM.h>
 #include <time.h>
 
@@ -23,7 +23,7 @@ void setup()
   Serial.printf(">>> Device: %d MHz \n", ESP.getCpuFreqMHz());             // Display device CPU frequency
   Serial.printf(">>> Boot Mode: %d \n", ESP.getBootMode());                // Display boot mode
   Serial.printf(">>> Free Sketch Space: %d \n", ESP.getFreeSketchSpace()); // Display free sketch space
-  
+
   // Initialize EEPROM module
   EEPROM.begin(512);
   Serial.println("\n\n>>>>>>>>>> 1. Read EEPROM \n");
@@ -89,36 +89,46 @@ void setup()
   Connect_Localtime_NTP();
   /* 2. Check firmware for updates */
   update_FOTA();
-
 }
 
 void loop()
 {
   // put your main code here, to run repeatedly:
+  time_t rawtime;
+  struct tm *timeinfo;
+
+  time(&rawtime);
+  timeinfo = localtime(&rawtime);
+  strftime(buffer_sent_serial, 80, "%H:%M:%S %d-%B-%Y", timeinfo);
+  Serial.printf("Time now: %s \n", buffer_sent_serial);
+  
   digitalWrite(LED_BUILTIN, LOW);  // Turn off the LED
-  delay(2000);                  // Wait for 0.5 seconds
+  delay(2000);                     // Wait for 0.5 seconds
   digitalWrite(LED_BUILTIN, HIGH); // Turn on the LED
-  delay(2000);                  // Wait for 0.5 seconds
+  delay(2000);                     // Wait for 0.5 seconds
   return;
 }
 
 bool VerifyConnection_WIFI()
 {
   int attempts = 0; // Variable to count connection attempts
-
+  int ledState = LOW;
   while (attempts < 40)
-  { // Loop until the number of attempts exceeds 40
+  {
+    ledState = !ledState;
+    digitalWrite(LED_BUILTIN, ledState); // Bật hoặc tắt LED
+    // Loop until the number of attempts exceeds 40
     switch (WiFi.status())
     {
     case WL_CONNECTED:
       Serial.println("WL_CONNECTED");
       // Blink the LED to indicate successful connection
-      for (int i = 0; i < 5; i++)
+      for (int i = 0; i < 15; i++)
       {
         digitalWrite(LED_BUILTIN, LOW);  // Turn off the LED
-        delay(300);                  // Wait for 0.5 seconds
+        delay(50);                       // Wait for 0.5 seconds
         digitalWrite(LED_BUILTIN, HIGH); // Turn on the LED
-        delay(150);                  // Wait for 0.5 seconds
+        delay(50);                       // Wait for 0.5 seconds
       }
       return true; // Return true to indicate successful connection
     case WL_CONNECT_FAILED:
@@ -292,7 +302,7 @@ void Connect_Localtime_NTP()
     while (time_year > 2023)
     {
       strftime(buffer_sent_serial, 80, "%H:%M:%S %d-%B-%Y", timeinfo);
-      Serial.printf("Time now: %s \n\n", buffer_sent_serial);
+      Serial.printf("Time now: %s \n", buffer_sent_serial);
       return;
     }
     // Delay for 1 second
@@ -310,8 +320,8 @@ void Connect_Localtime_NTP()
 
 void update_FOTA()
 {
-  Serial.println("\n\n>>>>>>>>>> 4. FOTA Workflows \n"); // Indicate the start of FOTA update process
-  Serial.println("Check firmware for updates."); // Prompt to check for firmware updates
+  Serial.println("\n>>>>>>>>>> 4. FOTA Workflows \n"); // Indicate the start of FOTA update process
+  Serial.println("Check firmware for updates.");       // Prompt to check for firmware updates
 
   Serial.println("Checking for updates"); // Display message indicating checking for updates
 
@@ -324,102 +334,108 @@ void update_FOTA()
   // 1. Using certificate
   // client_HTTPS.setTrustAnchors(&cert);
   // 2. Using fingerprint
-  // client_HTTPS.setFingerprint(fingerprint);
+  client_HTTPS.setFingerprint(fingerprint);
 
   // Not secure
-  client_HTTPS.setInsecure();
+  // client_HTTPS.setInsecure();
   if (!client_HTTPS.connect(host, httpsPort))
   {
     Serial.println(">>> raw.githubusercontent.com - Connection failed"); // Display connection failure message
-    Serial.printf(">>> Current version is %s \n", FirmwareVer);          // Display current firmware version
+    Serial.printf(">>> client_HTTPS.connect(host, httpsPort) is failed \n");
     // Print SSL error code
     // Serial.printf("SSL error code: %s\n", client_HTTPS.getLastSSLError());
     return;
   }
 
   client_HTTPS.print(String("GET ") + URL_fw_Version + " HTTP/1.1\r\n" +
-               "Host: " + host + "\r\n" +
-               "User-Agent: BuildFailureDetectorESP8266\r\n" +
-               "Connection: close\r\n\r\n");
+                     "Host: " + host + "\r\n" +
+                     "User-Agent: ESP8266\r\n" +
+                     "Connection: close\r\n\r\n");
 
-  // Check content from the Version file
   while (client_HTTPS.connected())
   {
-    String line = client_HTTPS.readStringUntil('\n');
-    if (line == "\r")
+    String payload = client_HTTPS.readString(); // Get the request response payload
+    // Serial.println(payload);                    // Indicate that headers have been received
+
+    // get the payload JSON
+    // Tìm vị trí của dấu mở ngoặc nhọn đầu tiên
+    int jsonStart = payload.indexOf("{");
+    if (jsonStart != -1)
     {
-      Serial.println(">>> Headers received <Info_prod.json>"); // Indicate that headers have been received
-      break;
+      // Tìm thấy đoạn JSON trong chuỗi text
+      String jsonText = payload.substring(jsonStart);
+      Serial.println("JSON output:");
+      Serial.println(jsonText);
+
+      JsonDocument jsonBuffer;
+      DeserializationError error = deserializeJson(jsonBuffer, jsonText);
+
+      if (error)
+      {
+        Serial.print(F("deserializeJson() failed with code ")); // Display JSON deserialization failure message
+        Serial.println(error.c_str());
+        return;
+      }
+      String author_prod = jsonBuffer["author"];
+      String version_prod = jsonBuffer["main"]["version"];
+
+      if (version_prod.equals(FirmwareVer))
+      {
+        Serial.printf(">>> Board__Firmware Version: %s \n", FirmwareVer);  // Display Board current firmware version
+        Serial.printf(">>> Server_Firmware Version: %s \n", version_prod); // Display Server current firmware version
+        Serial.println(">>> Device already on latest firmware version");   // Display message indicating already on latest firmware version
+      }
+      else
+      {
+        Serial.printf(">>> New firmware detected: "); // Display message indicating new firmware detected
+        Serial.print(FirmwareVer);
+        Serial.print(" -----> ");
+        Serial.println(version_prod);
+        // The line below is optional. It can be used to blink the LED on the board during flashing
+        // The LED will be on during download of one buffer of data from the network. The LED will
+        // be off during writing that buffer to flash
+        // On a good connection the LED should flash regularly. On a bad connection the LED will be
+        // on much longer than it will be off. Other pins than LED_BUILTIN may be used. The second
+        // value is used to put the LED on. If the LED is on with HIGH, that value should be passed
+        ESPhttpUpdate.setLedPin(LED_BUILTIN, LOW);
+
+        // Add optional callback notifiers
+        ESPhttpUpdate.onStart(update_started);
+        ESPhttpUpdate.onEnd(update_finished);
+        ESPhttpUpdate.onProgress(update_progress);
+        ESPhttpUpdate.onError(update_error);
+
+        t_httpUpdate_return ret = ESPhttpUpdate.update(client_HTTPS, URL_fw_Bin);
+
+        switch (ret)
+        {
+        case HTTP_UPDATE_FAILED:
+          Serial.printf("HTTP_UPDATE_FAILED Error (%d): %s\n", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str()); // Display HTTP update failed message
+          Serial.println(">>> Server overloaded or unavailable...");                                                                      // Display server unavailability message
+          Serial.println(">>> Or your device is not permitted to update on the system...");                                               // Display device update permission message
+          Serial.println(">>> Please check for updates at another time...");                                                              // Prompt to check for updates later
+          Serial.printf(">>> Current version is %s \n", FirmwareVer);                                                                     // Display current firmware version
+          Serial.println("> Skip updated...ERR");                                                                                         // Display skipping update message
+          delay(2000);
+          break;
+
+        case HTTP_UPDATE_NO_UPDATES:
+          Serial.println("HTTP_UPDATE_NO_UPDATES");                 // Display message indicating no updates available
+          Serial.println(">>> The current version is the latest."); // Display message indicating already on latest version
+          delay(1500);
+          break;
+
+        case HTTP_UPDATE_OK:
+          Serial.println("HTTP_UPDATE_OK"); // Display message indicating update successful
+          break;
+        }
+      }
+      Serial.println("\n<<<<<<<<<< Done Check FOTA >>>>>>>>>>\n"); // Indicate completion of FOTA update process
+    }
+    else
+    {
+      Serial.println("JSON not found in payload!");
+      return;
     }
   }
-
-  String payload = client_HTTPS.readString(); // Get the request response payload
-  Serial.println(payload);              // Display payload received
-  DynamicJsonDocument jsonBuffer(1024);
-
-  auto error = deserializeJson(jsonBuffer, payload);
-  if (error)
-  {
-    Serial.print(F("deserializeJson() failed with code ")); // Display JSON deserialization failure message
-    Serial.println(error.c_str());
-    return;
-  }
-
-  String author_prod = jsonBuffer["author"];
-  String version_prod = jsonBuffer["main"]["version"];
-
-  if (version_prod.equals(FirmwareVer))
-  {
-    Serial.printf(">>> Board__Firmware Version: %s \n", FirmwareVer);       // Display Board current firmware version
-    Serial.printf(">>> Server_Firmware Version: %s \n", version_prod);       // Display Server current firmware version
-    Serial.println(">>> Device already on latest firmware version"); // Display message indicating already on latest firmware version
-    delay(200);
-  }
-  else
-  {
-    Serial.printf(">>> New firmware detected: "); // Display message indicating new firmware detected
-    Serial.print(FirmwareVer);
-    Serial.print(" -----> ");
-    Serial.println(version_prod);
-    // The line below is optional. It can be used to blink the LED on the board during flashing
-    // The LED will be on during download of one buffer of data from the network. The LED will
-    // be off during writing that buffer to flash
-    // On a good connection the LED should flash regularly. On a bad connection the LED will be
-    // on much longer than it will be off. Other pins than LED_BUILTIN may be used. The second
-    // value is used to put the LED on. If the LED is on with HIGH, that value should be passed
-    ESPhttpUpdate.setLedPin(LED_BUILTIN, LOW);
-
-    // Add optional callback notifiers
-    ESPhttpUpdate.onStart(update_started);
-    ESPhttpUpdate.onEnd(update_finished);
-    ESPhttpUpdate.onProgress(update_progress);
-    ESPhttpUpdate.onError(update_error);
-
-    t_httpUpdate_return ret = ESPhttpUpdate.update(client_HTTPS, URL_fw_Bin);
-
-    switch (ret)
-    {
-    case HTTP_UPDATE_FAILED:
-      Serial.printf("HTTP_UPDATE_FAILED Error (%d): %s\n", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str()); // Display HTTP update failed message
-      Serial.println(">>> Server overloaded or unavailable...");                                                                      // Display server unavailability message
-      Serial.println(">>> Or your device is not permitted to update on the system...");                                               // Display device update permission message
-      Serial.println(">>> Please check for updates at another time...");                                                              // Prompt to check for updates later
-      Serial.printf(">>> Current version is %s \n", FirmwareVer);                                                                     // Display current firmware version
-      Serial.println("> Skip updated...ERR"); // Display skipping update message
-      delay(2000);
-      break;
-
-    case HTTP_UPDATE_NO_UPDATES:
-      Serial.println("HTTP_UPDATE_NO_UPDATES");                 // Display message indicating no updates available
-      Serial.println(">>> The current version is the latest."); // Display message indicating already on latest version
-      delay(1500);
-      break;
-
-    case HTTP_UPDATE_OK:
-      Serial.println("HTTP_UPDATE_OK"); // Display message indicating update successful
-      break;
-    }
-  }
-
-  Serial.println("\n<<<<<<<<<< Done Check FOTA >>>>>>>>>>\n"); // Indicate completion of FOTA update process
 }
