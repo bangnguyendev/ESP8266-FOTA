@@ -6,7 +6,7 @@
 #include <ArduinoJson.h>       /* ARDUINO JSON*/
 #include <EEPROM.h>
 #include <time.h>
-
+#include "ESP8266WebServer.h"
 /* USER DEFINE  */
 #include "src/include/Macro_define.h"         /* DEFINE MACRO */
 #include "src/include/DigiCertGlobalRootCA.h" /* DEFINE DigiCertGlobalRootCA */
@@ -89,24 +89,26 @@ void setup()
   Connect_Localtime_NTP();
   /* 2. Check firmware for updates */
   update_FOTA();
+  /* 3. Open port 80 Webserver ESP8266 */
+  Serial.println("\n>>>>>>>>>> 5. Open port 80 Webserver ESP8266!");
+  server.on("/", HTTP_GET, handleRoot);
+  server.on("/led_on", HTTP_GET, ledOn);
+  server.on("/led_off", HTTP_GET, ledOff);
+  server.on("/handleUpdateFirmware", HTTP_GET, handleUpdateFirmware);
+  server.begin();
 }
 
 void loop()
 {
   // put your main code here, to run repeatedly:
-  time_t rawtime;
-  struct tm *timeinfo;
+  // time_t rawtime;
+  // struct tm *timeinfo;
 
-  time(&rawtime);
-  timeinfo = localtime(&rawtime);
-  strftime(buffer_sent_serial, 80, "%H:%M:%S %d-%B-%Y", timeinfo);
-  Serial.printf("Time now: %s \n", buffer_sent_serial);
-  
-  digitalWrite(LED_BUILTIN, LOW);  // Turn off the LED
-  delay(2000);                     // Wait for 0.5 seconds
-  digitalWrite(LED_BUILTIN, HIGH); // Turn on the LED
-  delay(2000);                     // Wait for 0.5 seconds
-  return;
+  // time(&rawtime);
+  // timeinfo = localtime(&rawtime);
+  // strftime(buffer_sent_serial, 80, "%H:%M:%S %d-%B-%Y", timeinfo);
+  // Serial.printf("Time now: %s \n", buffer_sent_serial);
+  server.handleClient(); 
 }
 
 bool VerifyConnection_WIFI()
@@ -438,4 +440,50 @@ void update_FOTA()
       return;
     }
   }
+}
+
+void handleRoot() {
+  String message = "<!DOCTYPE html>";
+  message += "<html><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>ESP8266 WebServer</title></head><body>";
+  message += "<h1 style=\"text-align: center;\">ESP8266 WebServer</h1>";
+  message += "<div style=\"text-align: center;\">";
+  message += "<p>Author: " + Author + "</p>";
+  message += "<p>Version Firmware: " + FirmwareVer + "</p>";
+  message += ledOnButton;
+  message += ledOffButton;
+  message += "<br>";
+  message += updateButton;
+  message += "<br>";
+  message += buffer_sent_serial;
+  //Serial.printf("Time now: %s \n", buffer_sent_serial);
+  message += "</div></body></html>";
+  server.send(200, "text/html", message);
+}
+
+void ledOn() {
+  Serial.println(">>>>>>>>>> ledOnButton ......");
+  digitalWrite(LED_BUILTIN, LOW); 
+  server.sendHeader("Location", "/");
+  server.send(303);
+}
+
+void ledOff() {
+  Serial.println(">>>>>>>>>> ledOffButton ......");
+  digitalWrite(LED_BUILTIN, HIGH);
+  server.sendHeader("Location", "/");
+  server.send(303);
+}
+
+void handleUpdateFirmware() {
+  Serial.println(">>>>>>>>>> handleUpdateFirmware ......");
+  String message = "<!DOCTYPE html>";
+  message += "<html><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>ESP8266 WebServer</title></head><body>";
+  message += "<h1 style=\"text-align: center;\">Firmware update in progress...</h1>";
+  message += "</body></html>";
+  server.send(200, "text/html", message);
+  
+  update_FOTA();
+
+  server.sendHeader("Location", "/");
+  server.send(303);
 }

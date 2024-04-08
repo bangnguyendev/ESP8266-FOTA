@@ -1,6 +1,7 @@
 /* Cập nhật OTA */
 
-const String FirmwareVer={"v1.0.5"}; 
+const String FirmwareVer={"v1.0.6"}; 
+const String Author={"bangnguyendev"}; 
 
 #define URL_fw_Version "/bangnguyendev/ESP8266-FOTA/master/main/src/include/Info_prod.json"
 #define URL_fw_Bin "https://raw.githubusercontent.com/bangnguyendev/ESP8266-FOTA/master/build/main.ino.bin"
@@ -10,6 +11,13 @@ const int httpsPort = 443;
 
 WiFiClient client_HTTP; // WiFiClient for HTTP
 WiFiClientSecure client_HTTPS; // WiFiClientSecure for HTTPS
+
+ESP8266WebServer server(80);
+ 
+String ledOnButton = "<a href=\"/led_on\"><button style=\"padding: 10px; background-color: #4CAF50; color: white; border: none; text-decoration: none; display: inline-block; font-size: 16px;\">Turn LED On</button></a>";
+String ledOffButton = "<a href=\"/led_off\"><button style=\"padding: 10px; background-color: #f44336; color: white; border: none; text-decoration: none; display: inline-block; font-size: 16px;\">Turn LED Off</button></a>";
+String updateButton = "<a href=\"/handleUpdateFirmware\"><button style=\"padding: 10px; background-color: #008CBA; color: white; border: none; text-decoration: none; display: inline-block; font-size: 16px;\">Update Firmware</button></a>";
+
 
 //UPDATER
 String last_error;
@@ -61,3 +69,7 @@ extern void SmartConfigESP();
 extern bool VerifyConnection_WIFI();
 extern void Connect_Localtime_NTP();
 extern void update_FOTA();
+extern void handleRoot();
+extern void ledOn();
+extern void ledOff();
+extern void handleUpdateFirmware();
