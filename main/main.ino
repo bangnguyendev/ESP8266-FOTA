@@ -72,6 +72,8 @@ void setup()
       WiFi.printDiag(Serial);
       Serial.print("IP address: ");
       Serial.println(WiFi.localIP());
+      Serial.print("MAC address: ");
+      Serial.println(WiFi.macAddress());
     }
     else
     {
@@ -90,12 +92,14 @@ void setup()
   /* 2. Check firmware for updates */
   update_FOTA();
   /* 3. Open port 80 Webserver ESP8266 */
-  Serial.println("\n>>>>>>>>>> 5. Open port 80 Webserver ESP8266!");
+  Serial.println("\n>>>>>>>>>> 5. Opening port 80 Webserver ESP8266!");
   server.on("/", HTTP_GET, handleRoot);
   server.on("/led_on", HTTP_GET, ledOn);
   server.on("/led_off", HTTP_GET, ledOff);
   server.on("/handleUpdateFirmware", HTTP_GET, handleUpdateFirmware);
   server.begin();
+  Serial.printf("\n>>> Open Webserver port 80 at IP: ");
+  Serial.println(WiFi.localIP());
 }
 
 void loop()
@@ -442,20 +446,33 @@ void update_FOTA()
   }
 }
 
+String convertToFormattedString(uint32_t number) {
+    char buffer[12]; // Đủ lớn để chứa chuỗi định dạng
+    sprintf(buffer, "%02d %02d %02d %02d %02d",
+            (number / 10000000) % 100, (number / 100000) % 100, (number / 1000) % 100,
+            (number / 10) % 100, number % 100);
+    return String(buffer);
+}
+
 void handleRoot() {
   String message = "<!DOCTYPE html>";
   message += "<html><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>ESP8266 WebServer</title></head><body>";
   message += "<h1 style=\"text-align: center;\">ESP8266 WebServer</h1>";
   message += "<div style=\"text-align: center;\">";
   message += "<p>Author: " + Author + "</p>";
+  message += "<p>ESP ID: " + String(CHIPID, HEX) + "</p>";
+  message += "<p>ESP MAC: " + WiFi.macAddress() + "</p>";
   message += "<p>Version Firmware: " + FirmwareVer + "</p>";
+  // Hiển thị trạng thái thao tác (nếu có)
+  if (server.hasArg("message")) {
+    message += "<p>" + server.arg("message") + "</p>";
+  }
   message += ledOnButton;
   message += ledOffButton;
   message += "<br>";
   message += updateButton;
   message += "<br>";
-  message += buffer_sent_serial;
-  //Serial.printf("Time now: %s \n", buffer_sent_serial);
+  message += "<p>RANDOM_RNG: " + convertToFormattedString(RANDOM_REG32) + "</p>";
   message += "</div></body></html>";
   server.send(200, "text/html", message);
 }
@@ -463,27 +480,20 @@ void handleRoot() {
 void ledOn() {
   Serial.println(">>>>>>>>>> ledOnButton ......");
   digitalWrite(LED_BUILTIN, LOW); 
-  server.sendHeader("Location", "/");
+  server.sendHeader("Location", "/?message=LED+is+now+on");
   server.send(303);
 }
 
 void ledOff() {
   Serial.println(">>>>>>>>>> ledOffButton ......");
   digitalWrite(LED_BUILTIN, HIGH);
-  server.sendHeader("Location", "/");
+  server.sendHeader("Location", "/?message=LED+is+now+off");
   server.send(303);
 }
 
 void handleUpdateFirmware() {
   Serial.println(">>>>>>>>>> handleUpdateFirmware ......");
-  String message = "<!DOCTYPE html>";
-  message += "<html><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>ESP8266 WebServer</title></head><body>";
-  message += "<h1 style=\"text-align: center;\">Firmware update in progress...</h1>";
-  message += "</body></html>";
-  server.send(200, "text/html", message);
-  
-  update_FOTA();
-
-  server.sendHeader("Location", "/");
+  server.sendHeader("Location", "/?message=Check+Firmware+update");
   server.send(303);
+  update_FOTA();
 }
