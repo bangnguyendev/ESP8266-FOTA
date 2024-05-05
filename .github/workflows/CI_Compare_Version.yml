@@ -3,7 +3,7 @@ name: Compare Versions Firmware
 on:
   push:
     branches:
-      - master
+      - TFT_1.44_SPI
 
 jobs:
   compare:
