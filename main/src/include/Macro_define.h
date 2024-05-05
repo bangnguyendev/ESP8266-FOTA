@@ -4,8 +4,8 @@ const String FirmwareVer={"v1.0.0"};
 const String Author={"bangnguyendev"}; 
 
 #define Branch_git "TFT_1.44_SPI"
-#define URL_fw_Version "/bangnguyendev/ESP8266-FOTA/" + Branch_git + "/main/src/include/Info_prod.json"
-#define URL_fw_Bin "https://raw.githubusercontent.com/bangnguyendev/ESP8266-FOTA/"+ Branch_git + "/build/main.ino.bin"
+#define URL_fw_Version "/bangnguyendev/ESP8266-FOTA/" Branch_git "/main/src/include/Info_prod.json"
+#define URL_fw_Bin "https://raw.githubusercontent.com/bangnguyendev/ESP8266-FOTA/" Branch_git "/build/main.ino.bin"
 
 const char* host = "raw.githubusercontent.com";
 const int httpsPort = 443;
