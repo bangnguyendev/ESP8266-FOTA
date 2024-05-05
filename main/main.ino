@@ -7,9 +7,14 @@
 #include <EEPROM.h>
 #include <time.h>
 #include "ESP8266WebServer.h"
+#include <Adafruit_GFX.h>	 // Core graphics library
+#include <Adafruit_ST7735.h> // Hardware-specific library for ST7735
+#include <SPI.h>
+
 /* USER DEFINE  */
 #include "src/include/Macro_define.h"         /* DEFINE MACRO */
 #include "src/include/DigiCertGlobalRootCA.h" /* DEFINE DigiCertGlobalRootCA */
+#include "src/include/bitmap.h" /* DEFINE bitmap */
 
 void setup()
 {
@@ -18,6 +23,24 @@ void setup()
   // Initialize Serial communication at baud rate 115200
   Serial.begin(115200);
   delay(500);
+
+  // Initialize TFT 1.44 inch
+	tft.initR(INITR_144GREENTAB); // Init ST7735R chip, green tab
+	Serial.println(F("Initialize TFT 1.44 inch"));
+	tft.fillScreen(ST77XX_BLACK);
+
+  sprintf(string_tft, "bangnguyendev");
+	testdrawtext(5, 5, string_tft, 1, ST77XX_YELLOW);
+  sprintf(string_tft, " -ESP ID: %X", CHIPID);   
+  testdrawtext(5, 15, string_tft, 1, ST77XX_YELLOW);
+  sprintf(string_tft, " -Firmware: %s", FirmwareVer);
+  testdrawtext(5, 25, string_tft, 1, ST77XX_YELLOW);
+  sprintf(string_tft, " -Device: %d MHz", ESP.getCpuFreqMHz()); 
+  testdrawtext(5, 35, string_tft, 1, ST77XX_YELLOW);
+
+  tft.drawBitmap(32, 64, wifi, 64, 64, ST77XX_CYAN);
+  yield();
+
   Serial.printf("\n\n>>> ESP ID: %X \r\n", CHIPID);                        // Display ESP chip ID
   Serial.printf(">>> Firmware Version: %s \n", FirmwareVer);               // Display current firmware version
   Serial.printf(">>> Device: %d MHz \n", ESP.getCpuFreqMHz());             // Display device CPU frequency
@@ -74,6 +97,10 @@ void setup()
       Serial.println(WiFi.localIP());
       Serial.print("MAC address: ");
       Serial.println(WiFi.macAddress());
+      // print your board's IP address:
+      IPAddress ip = WiFi.localIP();
+      sprintf(string_tft, " -IP: %d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
+      testdrawtext(5, 45, string_tft, 1, ST77XX_YELLOW);
     }
     else
     {
@@ -496,4 +523,13 @@ void handleUpdateFirmware() {
   server.sendHeader("Location", "/?message=Check+Firmware+update");
   server.send(303);
   update_FOTA();
+}
+
+void testdrawtext(int x, int y, char * text, int z, uint16_t color)
+{
+	tft.setCursor(x, y);
+	tft.setTextSize(z);
+	tft.setTextColor(color);
+	tft.setTextWrap(true);
+	tft.print(text);
 }

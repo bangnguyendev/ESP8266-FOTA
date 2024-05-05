@@ -63,6 +63,22 @@ void update_error(int err) {
 char buffer_sent_serial[80];
 char buffer_year[80];
 
+/*   TFT 1.44 inch   */
+//GPIO Wemos D1 mini
+#define TFT_DC D4
+#define TFT_RST D3
+
+//SPI interface - none using MISO
+#define TFT_CS D8 // CS
+#define TFT_MOSI D7 // Data out
+#define TFT_SCLK D5 // Clock out
+
+// For ST7735-based displays, we will use this call
+Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCLK, TFT_RST);
+// yield(); // https://forum.arduino.cc/t/soft-wdt-reset-nodemcu/425567/2
+char string_tft[50] = "";
+/*  End TFT 1.44 inch   */
+
 extern void setup();
 extern void loop();
 extern void SmartConfigESP();
@@ -73,3 +89,4 @@ extern void handleRoot();
 extern void ledOn();
 extern void ledOff();
 extern void handleUpdateFirmware();
+extern void testdrawtext(int x, int y, char * text, int z, uint16_t color);
