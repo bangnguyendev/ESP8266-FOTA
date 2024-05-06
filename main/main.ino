@@ -132,13 +132,13 @@ void setup()
 void loop()
 {
   // put your main code here, to run repeatedly:
-  // time_t rawtime;
-  // struct tm *timeinfo;
-
-  // time(&rawtime);
-  // timeinfo = localtime(&rawtime);
-  // strftime(buffer_sent_serial, 80, "%H:%M:%S %d-%B-%Y", timeinfo);
+ 
+  time(&rawtime); // required update realtime
+  timeinfo = localtime(&rawtime); // required update realtime
+  strftime(buffer_sent_serial, 80, "%H:%M:%S %d-%B-%Y", timeinfo);
   // Serial.printf("Time now: %s \n", buffer_sent_serial);
+  // sprintf(string_tft, " -IP: %d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
+  testdrawtext(5, 55, buffer_sent_serial, 1, ST77XX_YELLOW);
   server.handleClient(); 
 }
 
@@ -322,11 +322,9 @@ void Connect_Localtime_NTP()
   // Loop indefinitely
   while (millis() - startTime < timeoutSeconds * 1000)
   {
-    time_t rawtime;
-    struct tm *timeinfo;
 
-    time(&rawtime);
-    timeinfo = localtime(&rawtime);
+    time(&rawtime); // required update realtime
+    timeinfo = localtime(&rawtime); // required update realtime
 
     strftime(buffer_year, 80, "%Y", timeinfo);
     timeinfo = localtime(&rawtime);
@@ -529,7 +527,7 @@ void testdrawtext(int x, int y, char * text, int z, uint16_t color)
 {
 	tft.setCursor(x, y);
 	tft.setTextSize(z);
-	tft.setTextColor(color);
+	tft.setTextColor(color, ST77XX_BLACK);
 	tft.setTextWrap(true);
 	tft.print(text);
 }

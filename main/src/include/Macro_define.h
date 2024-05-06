@@ -20,6 +20,10 @@ String ledOffButton = "<a href=\"/led_off\"><button style=\"padding: 10px; backg
 String updateButton = "<a href=\"/handleUpdateFirmware\"><button style=\"padding: 10px; background-color: #008CBA; color: white; border: none; text-decoration: none; display: inline-block; font-size: 16px;\">Update Firmware</button></a>";
 
 
+// NTP
+time_t rawtime;
+struct tm *timeinfo;
+
 //UPDATER
 String last_error;
 String update_status;
