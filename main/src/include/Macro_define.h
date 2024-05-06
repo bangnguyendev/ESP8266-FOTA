@@ -70,8 +70,8 @@ char buffer_year[80];
 
 /*   TFT 1.44 inch   */
 //GPIO Wemos D1 mini
-#define TFT_DC D4
-#define TFT_RST D3
+#define TFT_DC D0 // PIN RS OR DC
+#define TFT_RST -1
 
 //SPI interface - none using MISO
 #define TFT_CS D8 // CS
